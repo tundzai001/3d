@@ -1,0 +1,209 @@
+/* Thiết lập lại và cài đặt chung */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+    width: 100%; height: 100%; position: fixed; overflow: hidden;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: none;
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+}
+body {
+    background-color: #000;
+    font-family: 'Orbitron', 'Courier New', monospace;
+    perspective: 1500px; cursor: grab; touch-action: none;
+    -webkit-tap-highlight-color: transparent; color-scheme: dark light;
+    position: relative;
+}
+.hidden { display: none !important; }
+
+/* Các Lớp Nền và Hiệu ứng Vũ trụ */
+body::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 20px 30px, #eee, transparent), radial-gradient(1px 1px at 40px 70px, #fff, transparent), radial-gradient(1px 1px at 50px 160px, #ddd, transparent), radial-gradient(1px 1px at 90px 40px, #fff, transparent), radial-gradient(2px 2px at 150px 120px, #fff, transparent), radial-gradient(1px 1px at 130px 200px, #eee, transparent), radial-gradient(1px 1px at 160px 20px, #ddd, transparent); background-size: 200px 200px; background-position: 0 0; z-index: -3; animation: pan-stars-slow 250s linear infinite; transform: var(--parallax-transform-far); will-change: transform; }
+body::after { content: ''; position: absolute; inset: -50vmin; background-image: none; z-index: -2; animation: rotate-nebula 180s linear infinite alternate; transform: var(--parallax-transform-mid); will-change: transform; }
+#background-overlay { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 50px 50px, #fff, transparent), radial-gradient(2px 2px at 100px 200px, #ddd, transparent), radial-gradient(3px 3px at 200px 80px, #fff, transparent); background-size: 250px 250px; background-position: 0 0; z-index: -1; animation: pan-stars-fast 100s linear infinite; transform: var(--parallax-transform-near); will-change: transform; }
+
+/* Màn hình chờ */
+#loading-screen { position: fixed; inset: 0; z-index: 99999; background: #000; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1s ease-out; }
+#loading-screen.loaded { opacity: 0; pointer-events: none; }
+.heart-loader { width: 50px; height: 50px; background: #ff6b9d; position: relative; transform: rotate(45deg); animation: beat 1s infinite; margin-top: 20px; }
+.heart-loader:before, .heart-loader:after { content: ""; position: absolute; width: 50px; height: 50px; background: #ff6b9d; border-radius: 50%; }
+.heart-loader:before { top: -25px; left: 0; }
+.heart-loader:after { top: 0; left: -25px; }
+
+/* Các thành phần trong Thiên Hà */
+.galaxy-container { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform-style: preserve-3d; transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) scale(1); will-change: transform; }
+.text-particle {
+    position: absolute;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    transform: translate(-50%, -50%); 
+    max-width: 250px;
+    width: max-content;
+    white-space: normal;
+    word-wrap: break-word;
+    text-align: center;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(2px);
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    transform-style: preserve-3d;
+    pointer-events: auto;
+    transition: transform 0.3s ease, text-shadow 0.3s ease, background 0.3s ease;
+    letter-spacing: 1px;
+    will-change: transform, opacity;
+}
+.text-particle:hover, .text-particle.interactive {
+    transform: translate(-50%, -50%) scale(1.1);
+    text-shadow: 0 0 15px currentColor, 0 0 30px #fff;
+    cursor: default;
+}
+.text-particle.love { color: #ff6b9d; } .text-particle.birthday { color: #4ecdc4; } .text-particle.date { color: #c534ed; } .text-particle.special { color: #a8e6cf; } .text-particle.heart { color: #ff69b4; }
+.star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 10px white; animation: twinkle 3s infinite alternate; will-change: transform, opacity; }
+.starburst-particle { position: fixed; width: 3px; height: 3px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #fff; pointer-events: none; z-index: 100; }
+.shooting-star { position: fixed; top: 0; left: 0; width: 200px; height: 2px; background: linear-gradient(to left, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0)); border-radius: 50%; filter: drop-shadow(0 0 6px white); pointer-events: auto; cursor: pointer; z-index: 999; will-change: transform; }
+
+/* === CÁC THÀNH PHẦN GIAO DIỆN (UI COMPONENTS) === */
+
+/* Overlay hỏi bật nhạc */
+#music-overlay { position: fixed; z-index: 9999; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); color: #fff; font-size: 20px; letter-spacing: 1px; cursor: pointer; }
+
+/* Nút mở thư (Phiên bản hoàn thiện) */
+#special-day-btn {
+    position: fixed;
+    bottom: calc(115px + 20px); 
+    right: 20px;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: linear-gradient(145deg, #ff6b9d, #c534ed);
+    box-shadow: 0 0 15px #ff6b9d, 0 0 25px #c534ed;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: pulse 2s infinite;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* Đảm bảo không có padding làm lệch icon */
+}
+#special-day-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #ff6b9d, 0 0 40px #c534ed;
+}
+#special-day-btn::before { /* Vẽ nắp trên của lá thư */
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    clip-path: polygon(0% 0%, 100% 0%, 50% 50%);
+    z-index: 1;
+}
+#special-day-btn::after { /* Vẽ thân dưới của lá thư */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    clip-path: polygon(0% 0%, 50% 50%, 0% 100%, 0% 0%) polygon(100% 0%, 100% 100%, 50% 50%, 100% 0%);
+    z-index: 1;
+}
+#btn-icon-heart { /* Trái tim CSS */
+    position: relative;
+    width: 15px;
+    height: 15px;
+    transform: rotate(45deg);
+    z-index: 2;
+}
+#btn-icon-heart::before,
+#btn-icon-heart::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ff4757;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff4757;
+}
+#btn-icon-heart::before { top: -50%; left: 0; }
+#btn-icon-heart::after { top: 0; left: -50%; }
+
+/* Khung hiển thị thư */
+#letter-container { position: fixed; inset: 0; z-index: 10000; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+.letter-content { background: rgba(20, 20, 30, 0.9); color: #eee; padding: 30px 40px; border-radius: 10px; border: 1px solid #ff6b9d; max-width: 90%; width: 600px; max-height: 80vh; overflow-y: auto; position: relative; font-family: 'Times New Roman', serif; }
+.letter-content h1 { color: #ff6b9d; font-size: 24px; margin-bottom: 20px; }
+.letter-content p { font-size: 18px; line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; }
+.letter-content .signature { text-align: right; margin-top: 30px; font-style: italic; }
+#close-letter-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #fff; font-size: 30px; cursor: pointer; }
+
+/* Hiệu ứng gõ chữ trong thư */
+.typing-cursor { display: inline-block; background-color: #ff6b9d; width: 2px; height: 1.2em; animation: blink 1s infinite; margin-left: 1px; vertical-align: baseline; }
+.letter-content h1, .letter-content p { margin-bottom: 1em; line-height: 1.6; word-wrap: break-word; transition: opacity 0.4s ease, transform 0.4s ease; }
+.letter-content .signature { margin-top: 2em; font-style: italic; text-align: right; }
+.letter-content > * { transform-origin: top left; }
+
+/* Bảng điều khiển Cài đặt */
+#settings-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1001; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; }
+#settings-panel { position: fixed; top: 70px; right: 20px; z-index: 1001; background: rgba(20, 20, 30, 0.9); backdrop-filter: blur(5px); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 15px; color: #fff; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #ff6b9d; }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* Khung điều khiển nhạc */
+#waveform-controls { position: fixed; bottom: 15px; left: 15px; right: 15px; z-index: 1000; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; color: #fff; padding: 8px 12px; background: rgba(15, 15, 20, 0.6); backdrop-filter: blur(8px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+#waveform { width: 100%; height: 50px; margin: 5px 0; }
+.song-info { width: 100%; display: flex; align-items: center; gap: 10px; }
+.song-info #song-title { font-size: 13px; font-family: 'Orbitron', monospace; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.controls-buttons { display: flex; gap: 25px; align-items: center; }
+.controls-buttons button, #favorite-btn { background: none; border: none; color: white; cursor: pointer; transition: color 0.2s; }
+.controls-buttons button:hover, #favorite-btn:hover { color: #ff6b9d; }
+#prev-btn, #next-btn { font-size: 18px; }
+#play-pause-btn { font-size: 24px; }
+#favorite-btn { font-size: 22px; }
+#favorite-btn.favorited { color: #ff6b9d; }
+.timing { display: flex; justify-content: space-between; width: 100%; font-size: 11px; font-family: monospace; color: #ccc; margin-top: -5px; margin-bottom: 5px; padding: 0 5px; }
+
+/* Hiệu ứng đặc biệt (Sinh nhật, thông điệp sao) */
+#birthday-celebration { position: fixed; inset: 0; z-index: 10001; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.5); pointer-events: none; opacity: 0; transition: opacity 1s ease-in-out; }
+#birthday-celebration h1 { font-size: 5vw; color: white; text-shadow: 0 0 10px #ff6b9d, 0 0 20px #ff6b9d, 0 0 40px #ff6b9d; animation: birthday-pulse 2s infinite; }
+.confetti { position: fixed; width: 10px; height: 10px; background-color: #f00; opacity: 0.9; pointer-events: none; z-index: 10002; animation: fall 5s linear infinite; }
+.star-message {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 105, 180, 0.85);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: 'Orbitron', monospace;
+    z-index: 9999;
+    pointer-events: none;
+    animation: fade-in-out 2.5s ease-in-out forwards;
+    text-shadow: 0 0 5px black;
+}
+
+/* === CÁC ĐỊNH NGHĨA ANIMATION (KEYFRAMES) === */
+@keyframes pan-stars-slow { from { transform: translate(0, 0); } to { transform: translate(-200px, -200px); } }
+@keyframes pan-stars-fast { from { transform: translate(0, 0); } to { transform: translate(-250px, -250px); } }
+@keyframes rotate-nebula { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes beat { 0%, 100% { transform: scale(1) rotate(45deg); } 50% { transform: scale(1.1) rotate(45deg); } }
+@keyframes twinkle { to { opacity: 0.5; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes birthday-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+@keyframes fade-in-out {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}

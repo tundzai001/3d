@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <title>This is for you</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+</head>
+<body>
+    <!-- Lớp nền CSS gần nhất -->
+    <div id="background-overlay"></div>
+
+    <!-- Màn hình tải -->
+    <div id="loading-screen">
+        <p>Preparing a gift for you</p>
+        <div class="heart-loader"></div>
+    </div>
+
+    <!-- Lớp phủ yêu cầu tương tác để bật nhạc -->
+    <div id="music-overlay">
+        Chạm vào màn hình để bắt đầu... 🎵
+    </div>
+
+    <!-- Lớp phủ Chúc mừng Sinh nhật -->
+    <div id="birthday-celebration" class="hidden">
+        <h1>CHÚC MỪNG SINH NHẬT EM!</h1>
+    </div>
+
+    <!-- Vùng chứa hiệu ứng dải ngân hà -->
+    <div class="galaxy-container" id="galaxy"></div>
+
+    <!-- Nút bấm chỉ xuất hiện vào buổi tối có thư -->
+    <button id="special-day-btn" class="hidden"><span id="btn-icon-heart"></span></button>
+
+    <!-- Giao diện Bức thư -->
+    <div id="letter-container" class="hidden">
+        <div class="letter-content"></div>
+    </div>
+    
+    <!-- Bảng Cài đặt -->
+    <button id="settings-toggle-btn" class="hidden">⚙️</button>
+    <div id="settings-panel" class="hidden">
+        <div class="setting-item">
+            <label for="volume-slider">Âm lượng</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.3">
+        </div>
+        <div class="setting-item">
+            <label for="gyro-toggle">3D Rotation</label>
+            <label class="switch">
+                <input type="checkbox" id="gyro-toggle" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+    
+    <!-- BỘ ĐIỀU KHIỂN NHẠC DẠNG SÓNG MỚI -->
+    <div id="waveform-controls" class="hidden">
+        <div class="song-info">
+            <button id="favorite-btn">♡</button>
+            <span id="song-title">Đang tải...</span>
+        </div>
+        <div id="waveform"></div>
+        <div class="timing">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+        <div class="controls-buttons">
+            <button id="prev-btn">◀︎◀︎</button>
+            <!-- THÊM NÚT PLAY/PAUSE VÀO ĐÂY -->
+            <button id="play-pause-btn">❚❚</button>
+            <button id="next-btn">▶︎▶︎</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" preload="auto"></audio>
+    <script src="script.js"></script>
+</body>
+</html>
