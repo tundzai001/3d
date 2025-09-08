@@ -425,22 +425,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function runBirthdayCheck() { const now = new Date(); if (now.getDate() === birthdayData.day && now.getMonth() + 1 === birthdayData.month) { isBirthdayMode = true; return true; } return false; }
     function activateBirthdayMode() { document.getElementById('special-day-btn').classList.add('hidden'); triggerConfetti(); const celebrationOverlay = document.getElementById('birthday-celebration'); setTimeout(() => { celebrationOverlay.classList.remove('hidden'); celebrationOverlay.style.opacity = '1'; }, 1000); setTimeout(() => { celebrationOverlay.style.opacity = '0'; setTimeout(() => celebrationOverlay.classList.add('hidden'), 1000); }, 5000); const btn = document.getElementById('special-day-btn'); btn.classList.remove('hidden'); btn.addEventListener('click', () => openLetter(birthdayData.letter, birthdayData.song, true)); }
     
-    function checkAndSetupLetterButton() {
-        const btn = document.getElementById('special-day-btn');
+    function getLetterForCurrentTime() {
         const now = new Date();
         const hour = now.getHours();
         const day = now.getDate();
+
+        // Ưu tiên thư ban ngày nếu trong khung giờ (0h -> 21h59)
         const daytimeLetterData = daytimeLetters.find(l => l.day === day);
         if (daytimeLetterData && hour >= 0 && hour < 22) {
-            btn.classList.remove('hidden');
-            btn.addEventListener('click', () => openLetter(daytimeLetterData, null));
-            return;
+            return { letter: daytimeLetterData, song: null };
         }
+
+        // Nếu không, kiểm tra thư buổi tối (từ 22h trở đi)
         const dailyLetterData = dailyLetters.find(l => l.day === day);
         const dailySongData = dailySongs.find(s => s.day === day);
-        if (dailyLetterData && dailySongData && hour >= 19) {
+        if (dailyLetterData && dailySongData && hour >= 22) {
+            return { letter: dailyLetterData, song: dailySongData.song };
+        }
+
+        return null; // Không có thư nào phù hợp
+    }
+
+    function checkAndSetupLetterButton() {
+        const btn = document.getElementById('special-day-btn');
+        const letterInfo = getLetterForCurrentTime();
+        if (letterInfo) {
             btn.classList.remove('hidden');
-            btn.addEventListener('click', () => openLetter(dailyLetterData, dailySongData.song));
+            btn.addEventListener('click', () => openLetter(letterInfo.letter, letterInfo.song));
         }
     }
 
