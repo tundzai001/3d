@@ -412,10 +412,103 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleOrientation(event) { if (!gyroEnabled) return; lastKnownOrientation.beta = event.beta; lastKnownOrientation.gamma = event.gamma; if (isDragging) return; if (!initialOrientation) { initialOrientation = { beta: event.beta, gamma: event.gamma }; } const deltaBeta = event.beta - initialOrientation.beta; const deltaGamma = event.gamma - initialOrientation.gamma; rotationX = deltaBeta * GYRO_SENSITIVITY; rotationY = deltaGamma * GYRO_SENSITIVITY; updateGalaxyTransform(); }
 
     // --- CÁC HÀM ÂM NHẠC ---
-    function playTrack(track) { if (!wavesurfer) { wavesurfer = WaveSurfer.create({ container: waveformContainer, waveColor: 'rgba(200, 200, 200, 0.5)', progressColor: '#ff6b9d', height: 50, barWidth: 2, barRadius: 3, cursorWidth: 0, responsive: true, hideScrollbar: true, media: audio, }); wavesurfer.on('finish', () => { if (isLetterModeActive) {isLetterModeActive = false; playNextInMix(); } else {}; if (isBirthdayMode) playTrack(birthdayData.song); else playNextInMix(); }); wavesurfer.on('audioprocess', () => { currentTimeEl.textContent = formatTime(wavesurfer.getCurrentTime()); }); wavesurfer.on('ready', () => { durationEl.textContent = formatTime(wavesurfer.getDuration()); wavesurfer.play(); }); wavesurfer.on('error', (err) => { console.error(`Lỗi WaveSurfer: ${err}\nKhông thể tải file: ${track.file}`); playNextInMix(); }); wavesurfer.on('play', () => playPauseBtn.textContent = '❚❚'); wavesurfer.on('pause', () => playPauseBtn.textContent = '▶'); } songTitleEl.textContent = track.title; wavesurfer.load(track.file); updateFavoriteButton(track.file); }
-    function createDailyMix() { const playlistToShuffle = [...mainPlaylist]; upNextPlaylist = shuffleArray(playlistToShuffle); upNextIndex = 0; }
-    function playNextInMix() { if (upNextPlaylist.length === 0) createDailyMix(); if(upNextPlaylist.length > 0) { playTrack(upNextPlaylist[upNextIndex]); upNextIndex = (upNextIndex + 1) % upNextPlaylist.length; } }
-    function playPrevInMix() { if (upNextPlaylist.length === 0) return; upNextIndex -= 2; if (upNextIndex < 0) upNextIndex = upNextPlaylist.length + upNextIndex; playTrack(upNextPlaylist[upNextIndex]); upNextIndex = (upNextIndex + 1) % upNextPlaylist.length; }
+    function playTrack(track) {
+        // Nếu chưa khởi tạo wavesurfer, thì khởi tạo
+        if (!wavesurfer) {
+            wavesurfer = WaveSurfer.create({
+                container: waveformContainer,
+                waveColor: 'rgba(200, 200, 200, 0.5)',
+                progressColor: '#ff6b9d',
+                height: 50,
+                barWidth: 2,
+                barRadius: 3,
+                cursorWidth: 0,
+                responsive: true,
+                hideScrollbar: true,
+                media: audio,
+            });
+
+            wavesurfer.on('finish', () => {
+                // Reset lại isLetterModeActive khi nhạc thư kết thúc
+                if (isLetterModeActive) {
+                    isLetterModeActive = false;
+                }
+                if (isBirthdayMode) {
+                    playTrack(birthdayData.song);
+                } else {
+                    playNextInMix();
+                }
+            });
+
+            wavesurfer.on('audioprocess', () => {
+                currentTimeEl.textContent = formatTime(wavesurfer.getCurrentTime());
+            });
+            
+            // LOGIC KHI NHẠC SẴN SÀNG
+            wavesurfer.on('ready', () => {
+                durationEl.textContent = formatTime(wavesurfer.getDuration());
+                songTitleEl.textContent = track.title; // Cập nhật tên bài hát đúng lúc
+                
+                // Nếu đang trong chế độ mở thư, thì thực hiện fade-in
+                if (isLetterModeActive) {
+                    fadeIn();
+                } else {
+                    // Nếu không thì phát bình thường
+                    wavesurfer.play();
+                }
+            });
+
+            wavesurfer.on('error', (err) => {
+                console.error(`Lỗi WaveSurfer: ${err}\nKhông thể tải file: ${track.file}`);
+                songTitleEl.textContent = "Lỗi tải bài hát, đang chuyển bài..."; // Thông báo lỗi
+                playNextInMix();
+            });
+
+            wavesurfer.on('play', () => playPauseBtn.textContent = '❚❚');
+            wavesurfer.on('pause', () => playPauseBtn.textContent = '▶');
+        }
+
+        //  Luôn dừng bài hát hiện tại và hiển thị loading
+        wavesurfer.stop();
+        songTitleEl.textContent = "Đang tải...";
+        currentTimeEl.textContent = "0:00";
+        durationEl.textContent = "0:00";
+        waveformContainer.style.opacity = '0.5'; // Làm mờ waveform cũ
+
+        wavesurfer.load(track.file);
+        waveformContainer.style.opacity = '1'; // Hiện lại waveform khi bắt đầu tải
+        updateFavoriteButton(track.file);
+    }
+
+    function createDailyMix() {
+        const playlistToShuffle = [...mainPlaylist];
+        upNextPlaylist = shuffleArray(playlistToShuffle);
+        upNextIndex = 0;
+    }
+
+    function playNextInMix() {
+        if (upNextPlaylist.length === 0) createDailyMix();
+        if (upNextPlaylist.length > 0) {
+            playTrack(upNextPlaylist[upNextIndex]);
+            upNextIndex = (upNextIndex + 1) % upNextPlaylist.length;
+        }
+    }
+
+    function playPrevInMix() {
+        if (upNextPlaylist.length === 0) return;
+        upNextIndex -= 2;
+        if (upNextIndex < 0) upNextIndex = upNextPlaylist.length + upNextIndex;
+        playTrack(upNextPlaylist[upNextIndex]);
+        upNextIndex = (upNextIndex + 1) % upNextPlaylist.length;
+    }
+
+    function fadeToSpecialTrack(specialTrack) {
+        isLetterModeActive = true;
+        // Gọi hàm fadeOut và truyền việc phát nhạc mới vào làm callback
+        fadeOut(() => {
+            playTrack(specialTrack);
+        });
+    }
     function fadeToSpecialTrack(specialTrack) { isLetterModeActive = true; wavesurfer.setVolume(0); playTrack(specialTrack); wavesurfer.setVolume(volumeSlider.value); }
     function getFavorites() { return JSON.parse(localStorage.getItem('favoriteSongs')) || []; }
     function saveFavorites(favorites) { localStorage.setItem('favoriteSongs', JSON.stringify(favorites)); }
@@ -560,3 +653,40 @@ document.addEventListener('DOMContentLoaded', function() {
     
     init();
 })
+// --- CÁC HÀM ÂM NHẠC ---
+
+// HÀM MỚI: Giảm âm lượng dần về 0
+function fadeOut(callback) {
+    const currentVolume = wavesurfer.getVolume();
+    if (currentVolume === 0) {
+        if (callback) callback();
+        return;
+    }
+    const fadeInterval = setInterval(() => {
+        const newVolume = wavesurfer.getVolume() - 0.05;
+        if (newVolume > 0) {
+            wavesurfer.setVolume(newVolume);
+        } else {
+            clearInterval(fadeInterval);
+            wavesurfer.setVolume(0);
+            wavesurfer.stop(); // Dừng hẳn nhạc sau khi fade out
+            if (callback) callback(); // Gọi hàm tiếp theo sau khi hoàn tất
+        }
+    }, 50); // Giảm âm lượng mỗi 50ms
+}
+
+// HÀM MỚI: Tăng âm lượng dần đến mức người dùng đã chọn
+function fadeIn() {
+    const targetVolume = parseFloat(volumeSlider.value);
+    wavesurfer.setVolume(0);
+    wavesurfer.play();
+    const fadeInterval = setInterval(() => {
+        const newVolume = wavesurfer.getVolume() + 0.05;
+        if (newVolume < targetVolume) {
+            wavesurfer.setVolume(newVolume);
+        } else {
+            clearInterval(fadeInterval);
+            wavesurfer.setVolume(targetVolume);
+        }
+    }, 50); // Tăng âm lượng mỗi 50ms
+}
